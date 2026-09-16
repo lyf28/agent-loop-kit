@@ -12,6 +12,18 @@ Review the implementation against:
 - tests
 - unnecessary changes
 
+Focus on changes relevant to the user's task.
+
+Do not fail the review because of harness/runtime-generated artifacts
+that are unrelated to the requested implementation, including:
+
+- .agent-loop/
+- **pycache**/
+- \*.pyc
+
+Do not request unrelated cleanup or refactoring unless it is necessary
+for correctness or for completing the original task.
+
 Run relevant read-only checks or tests when useful.
 
 Your final line MUST be exactly one of:
