@@ -7,7 +7,7 @@ from remote_loader import load_manifest, load_agents
 
 
 def run_codex(prompt: str, cwd: Path, read_only: bool = False) -> str:
-    command = ["codex", "exec"]
+    command = ["cmd", "/c", "codex", "exec"]
 
     if read_only:
         command += ["--sandbox", "read-only"]
