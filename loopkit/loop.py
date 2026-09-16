@@ -7,28 +7,44 @@ from remote_loader import load_manifest, load_agents
 
 
 def run_codex(prompt: str, cwd: Path, read_only: bool = False) -> str:
-    command = ["cmd", "/c", "codex", "exec"]
+    command = [
+        "cmd",
+        "/c",
+        "codex",
+        "exec",
+    ]
 
     if read_only:
-        command += ["--sandbox", "read-only"]
+        command += [
+            "--sandbox",
+            "read-only",
+        ]
 
-    command.append(prompt)
+    # "-" means: read the prompt from stdin
+    command.append("-")
 
     result = subprocess.run(
         command,
         cwd=cwd,
+        input=prompt,
         capture_output=True,
         text=True,
         encoding="utf-8",
         errors="replace",
     )
 
-    output = result.stdout
+    stdout = result.stdout or ""
+    stderr = result.stderr or ""
 
-    if result.stderr:
-        output += "\n" + result.stderr
+    if result.returncode != 0:
+        raise RuntimeError(
+            "Codex execution failed.\n"
+            f"Exit code: {result.returncode}\n\n"
+            f"STDOUT:\n{stdout}\n\n"
+            f"STDERR:\n{stderr}"
+        )
 
-    return output
+    return stdout
 
 
 def save_log(run_dir: Path, filename: str, content: str):
@@ -157,4 +173,14 @@ Review the CURRENT repository state.
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+
+    except KeyboardInterrupt:
+        print("\n\n⛔ Loop cancelled by user.")
+        sys.exit(130)
+
+    except Exception as error:
+        print("\n\n❌ Agent loop failed:")
+        print(error)
+        sys.exit(1)
