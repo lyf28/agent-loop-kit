@@ -32,13 +32,13 @@ Run the full agent loop from the root of the repository you want Codex to work
 on:
 
 ```sh
-python loopkit/loop.py https://github.com/user/repo "your task"
+python path/to/agent-loop-kit/loopkit/loop.py https://github.com/user/repo "your task"
 ```
 
 Smoke test remote harness loading:
 
 ```sh
-python loopkit/remote_loader.py https://github.com/user/repo
+python path/to/agent-loop-kit/loopkit/remote_loader.py https://github.com/user/repo
 ```
 
 The remote harness must be a GitHub repository containing `agent-loop.json` and
@@ -46,7 +46,8 @@ all prompt files referenced by that manifest.
 
 ## Configuration
 
-Configuration lives in `agent-loop.json`:
+Loop configuration lives in the remote harness repository's
+`agent-loop.json`:
 
 - `agents` maps role names to prompt file paths. The default roles are
   `planner`, `implementer`, and `reviewer`.
@@ -56,11 +57,13 @@ Configuration lives in `agent-loop.json`:
 
 ## Repository Structure
 
-- `agent-loop.json` - manifest for agent prompt paths and loop settings.
+- `agent-loop.json` - remote harness manifest for agent prompt paths and loop
+  settings.
 - `loopkit/loop.py` - main CLI loop runner.
 - `loopkit/remote_loader.py` - GitHub manifest and prompt loader.
-- `agents/*.md` - default planner, implementer, and reviewer prompt templates.
-- `.agent-loop/runs/` - generated run logs.
+- `agents/*.md` - default remote harness planner, implementer, and reviewer
+  prompt templates.
+- `.agent-loop/runs/` - generated run logs in the target workspace.
 
 ## Operational Notes
 
@@ -74,13 +77,13 @@ Configuration lives in `agent-loop.json`:
 Verify that the remote manifest and prompt files can be loaded:
 
 ```sh
-python loopkit/remote_loader.py https://github.com/user/repo
+python path/to/agent-loop-kit/loopkit/remote_loader.py https://github.com/user/repo
 ```
 
 Run an end-to-end check:
 
 ```sh
-python loopkit/loop.py https://github.com/user/repo "test task"
+python path/to/agent-loop-kit/loopkit/loop.py https://github.com/user/repo "test task"
 ```
 
 For documentation-only changes, you can also confirm the Python files still
