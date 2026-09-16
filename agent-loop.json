@@ -1,0 +1,19 @@
+{
+  "name": "agent-loop-kit",
+  "version": "0.2.0",
+
+  "agents": {
+    "planner": "agents/planner.md",
+    "implementer": "agents/implementer.md",
+    "reviewer": "agents/reviewer.md"
+  },
+
+  "loop": {
+    "max_rounds": 5,
+    "flow": [
+      "planner",
+      "implementer",
+      "reviewer"
+    ]
+  }
+}
