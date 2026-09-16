@@ -3,14 +3,7 @@ import subprocess
 import sys
 import datetime
 
-
-ROOT = Path(__file__).resolve().parent.parent
-AGENTS_DIR = ROOT / "agents"
-
-
-def load_agent(name: str) -> str:
-    path = AGENTS_DIR / f"{name}.md"
-    return path.read_text(encoding="utf-8")
+from remote_loader import load_manifest, load_agents
 
 
 def run_codex(prompt: str, cwd: Path, read_only: bool = False) -> str:
@@ -44,19 +37,30 @@ def save_log(run_dir: Path, filename: str, content: str):
 
 
 def main():
-    if len(sys.argv) < 2:
-        print('Usage: python loop.py "task"')
+    if len(sys.argv) < 3:
+        print(
+            'Usage: python loop.py '
+            '<harness-url> "task"'
+        )
         sys.exit(1)
 
-    task = sys.argv[1]
+    harness_url = sys.argv[1]
+    task = sys.argv[2]
     repo = Path.cwd()
 
     timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     run_dir = repo / ".agent-loop" / "runs" / timestamp
 
-    planner = load_agent("planner")
-    implementer = load_agent("implementer")
-    reviewer = load_agent("reviewer")
+    print("🌐 Loading remote harness...")
+
+    manifest = load_manifest(harness_url)
+    agents = load_agents(harness_url, manifest)
+
+    planner = agents["planner"]
+    implementer = agents["implementer"]
+    reviewer = agents["reviewer"]
+
+    max_rounds = manifest["loop"]["max_rounds"]
 
     print("\n🧠 Planning...\n")
 
@@ -78,8 +82,6 @@ USER TASK:
     print(plan)
 
     feedback = ""
-
-    max_rounds = 5
 
     for round_number in range(1, max_rounds + 1):
 
