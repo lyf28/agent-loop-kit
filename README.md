@@ -28,6 +28,29 @@ files that control the loop.
 
 ## Usage
 
+### Windows MVP install
+
+From this repository, install the user-local `agent-loop` command:
+
+```powershell
+.\bootstrap.ps1
+```
+
+Open a new terminal, then run the agent loop from the repository you want Codex
+to work on:
+
+```powershell
+agent-loop "your task"
+```
+
+If the harness repository is not this kit's `origin` remote, pass it explicitly:
+
+```powershell
+.\bootstrap.ps1 -HarnessUrl https://github.com/user/repo
+```
+
+### Direct Python usage
+
 Run the full agent loop from the root of the repository you want Codex to work
 on:
 
