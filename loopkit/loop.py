@@ -19,6 +19,11 @@ def run_codex(prompt: str, cwd: Path, read_only: bool = False) -> str:
             "--sandbox",
             "read-only",
         ]
+    else:
+        command += [
+            "--sandbox",
+            "workspace-write",
+        ]
 
     # "-" means: read the prompt from stdin
     command.append("-")
