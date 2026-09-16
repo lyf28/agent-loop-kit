@@ -4,6 +4,20 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Assert-CommandAvailable {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name,
+
+        [Parameter(Mandatory = $true)]
+        [string]$InstallHint
+    )
+
+    if (-not (Get-Command $Name -ErrorAction SilentlyContinue)) {
+        throw "$Name is required for the Windows MVP. $InstallHint"
+    }
+}
+
 function Convert-ToSingleQuotedPowerShellString {
     param(
         [Parameter(Mandatory = $true)]
@@ -11,6 +25,16 @@ function Convert-ToSingleQuotedPowerShellString {
     )
 
     return "'" + ($Value -replace "'", "''") + "'"
+}
+
+Assert-CommandAvailable -Name "python" -InstallHint "Install Python and make sure python is available on PATH, then re-run .\bootstrap.ps1."
+Assert-CommandAvailable -Name "codex" -InstallHint "Install the Codex CLI and make sure codex is available on PATH, then re-run .\bootstrap.ps1."
+Assert-CommandAvailable -Name "gh" -InstallHint "Install GitHub CLI and make sure gh is available on PATH, then re-run .\bootstrap.ps1."
+
+& gh auth status *> $null
+
+if ($LASTEXITCODE -ne 0) {
+    throw "GitHub CLI is not authenticated. Run gh auth login from PowerShell, then re-run .\bootstrap.ps1."
 }
 
 $kitRoot = $PSScriptRoot
@@ -105,6 +129,34 @@ else {
     $pathUpdated = $false
 }
 
+$currentProcessPath = $env:Path
+
+if (-not $currentProcessPath) {
+    $currentProcessPath = ""
+}
+
+$processPathEntries = $currentProcessPath -split ";" |
+    Where-Object { $_ } |
+    ForEach-Object { $_.TrimEnd("\") }
+
+$processPathContainsBinDir = $processPathEntries |
+    Where-Object { $_ -ieq $normalizedBinDir } |
+    Select-Object -First 1
+
+if (-not $processPathContainsBinDir) {
+    if ($currentProcessPath.Trim()) {
+        $env:Path = $currentProcessPath.TrimEnd(";") + ";" + $binDir
+    }
+    else {
+        $env:Path = $binDir
+    }
+
+    $processPathUpdated = $true
+}
+else {
+    $processPathUpdated = $false
+}
+
 Write-Host "Installed agent-loop shims:"
 Write-Host "  $psShimPath"
 Write-Host "  $cmdShimPath"
@@ -117,16 +169,24 @@ if ($pathUpdated) {
     Write-Host "Added to your user PATH:"
     Write-Host "  $binDir"
     Write-Host ""
-    Write-Host "Open a new terminal, then run:"
 }
 else {
     Write-Host "Your user PATH already includes:"
     Write-Host "  $binDir"
     Write-Host ""
-    Write-Host "Run:"
 }
 
+if ($processPathUpdated) {
+    Write-Host "Added to this PowerShell session PATH."
+}
+else {
+    Write-Host "This PowerShell session PATH already includes:"
+    Write-Host "  $binDir"
+}
+
+Write-Host ""
+Write-Host "Run now:"
 Write-Host '  agent-loop "your task"'
 Write-Host ""
-Write-Host "Or use it immediately from this shell:"
+Write-Host "Direct shim fallback:"
 Write-Host "  & `"$psShimPath`" `"your task`""

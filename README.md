@@ -30,18 +30,23 @@ files that control the loop.
 
 ### Windows MVP install
 
-From this repository, install the user-local `agent-loop` command:
+From PowerShell in this repository, install the user-local `agent-loop`
+command by running the script directly:
 
 ```powershell
 .\bootstrap.ps1
 ```
 
-Open a new terminal, then run the agent loop from the repository you want Codex
-to work on:
+The command is available immediately in that same PowerShell session. Run the
+agent loop from the repository you want Codex to work on:
 
 ```powershell
 agent-loop "your task"
 ```
+
+The installer also updates your persistent User PATH. Already-running parent
+applications such as VS Code may need to be restarted before newly created
+terminals inherit that PATH update.
 
 If the harness repository is not this kit's `origin` remote, pass it explicitly:
 
