@@ -1,38 +1,43 @@
 import json
-import urllib.request
+import subprocess
 
 
-def github_raw_url(repo_url: str, path: str, branch: str = "main") -> str:
+def parse_github_repo(repo_url: str):
     repo_url = repo_url.rstrip("/")
 
     if repo_url.endswith(".git"):
         repo_url = repo_url[:-4]
 
-    parts = repo_url.split("github.com/")
+    if "github.com/" not in repo_url:
+        raise ValueError("Only GitHub repositories are supported.")
 
-    if len(parts) != 2:
-        raise ValueError("Only GitHub repositories are supported for now.")
-
-    owner_repo = parts[1]
-
-    return (
-        f"https://raw.githubusercontent.com/"
-        f"{owner_repo}/{branch}/{path}"
-    )
+    return repo_url.split("github.com/")[1]
 
 
 def load_manifest(repo_url: str) -> dict:
-    url = github_raw_url(
-        repo_url,
-        "agent-loop.json",
+    repo = parse_github_repo(repo_url)
+
+    command = [
+        "gh",
+        "api",
+        f"repos/{repo}/contents/agent-loop.json",
+        "-H",
+        "Accept: application/vnd.github.raw+json",
+    ]
+
+    result = subprocess.run(
+        command,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
     )
 
-    print(f"Loading manifest from:\n{url}\n")
+    if result.returncode != 0:
+        raise RuntimeError(
+            f"Failed to load harness manifest:\n{result.stderr}"
+        )
 
-    with urllib.request.urlopen(url) as response:
-        data = response.read().decode("utf-8")
-
-    return json.loads(data)
+    return json.loads(result.stdout)
 
 
 if __name__ == "__main__":
@@ -41,7 +46,7 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print(
             "Usage: python remote_loader.py "
-            "https://github.com/user/agent-loop-kit"
+            "https://github.com/user/repo"
         )
         sys.exit(1)
 
